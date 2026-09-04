@@ -2,84 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateClienteRequest;
+use App\Http\Resources\ClienteResource;
+use App\Models\Cliente;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class ClienteController extends Controller
 {
-    /**
-     * Lista todos os clientes cadastrados.
-     *
-     * GET /api/clientes
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        // TODO: Retornar a lista paginada de clientes.
-        return response()->json(['message' => 'Not implemented'], 501);
+        return ClienteResource::collection(Cliente::latest()->paginate());
     }
 
-    /**
-     * Cadastra um novo cliente.
-     *
-     * POST /api/clientes
-     *
-     * Validações esperadas:
-     *  - nome: obrigatório, string
-     *  - cpf: obrigatório, 11 dígitos numéricos, único na tabela clientes
-     *  - email: obrigatório, formato e-mail válido, único na tabela clientes
-     *  - telefone: opcional, string
-     *  - renda_mensal: obrigatório, numérico, mínimo de 0
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
+    public function store(StoreClienteRequest $request): JsonResponse
     {
-        // TODO: Validar os dados de entrada e persistir o cliente no banco.
-        return response()->json(['message' => 'Not implemented'], 501);
+        $cliente = Cliente::create($request->validated());
+
+        return ClienteResource::make($cliente)
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    /**
-     * Exibe os dados de um cliente específico.
-     *
-     * GET /api/clientes/{id}
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show($id)
+    public function show(Cliente $cliente): ClienteResource
     {
-        // TODO: Buscar e retornar o cliente pelo ID (retornar 404 se não encontrado).
-        return response()->json(['message' => 'Not implemented'], 501);
+        return ClienteResource::make($cliente);
     }
 
-    /**
-     * Atualiza os dados de um cliente existente.
-     *
-     * PUT /api/clientes/{id}
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(Request $request, $id)
+    public function update(UpdateClienteRequest $request, Cliente $cliente): ClienteResource
     {
-        // TODO: Validar os dados e atualizar o cliente (retornar 404 se não encontrado).
-        return response()->json(['message' => 'Not implemented'], 501);
+        $cliente->update($request->validated());
+
+        return ClienteResource::make($cliente);
     }
 
-    /**
-     * Remove um cliente do sistema.
-     *
-     * DELETE /api/clientes/{id}
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy($id)
+    public function destroy(Cliente $cliente): Response
     {
-        // TODO: Remover o cliente (retornar 404 se não encontrado, 204 No Content se removido).
-        return response()->json(['message' => 'Not implemented'], 501);
+        $cliente->delete();
+
+        return response()->noContent();
     }
 }
