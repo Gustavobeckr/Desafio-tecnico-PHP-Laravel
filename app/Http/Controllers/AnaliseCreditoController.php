@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SolicitarAnaliseRequest;
+use App\Http\Resources\AnaliseCreditoResource;
+use App\Models\AnaliseCredito;
+use App\Services\Credito\AnaliseCreditoService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AnaliseCreditoController extends Controller
 {
+    public function __construct(private readonly AnaliseCreditoService $service) {}
+
     /**
      * Solicita uma nova análise de crédito.
      *
@@ -26,13 +34,15 @@ class AnaliseCreditoController extends Controller
      *  5. Aplicar as regras de negócio (renda mínima, faixas de score, comprometimento de renda).
      *  6. Atualizar e retornar a análise persistida com o resultado final.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
      */
-    public function solicitar(Request $request)
+    public function solicitar(SolicitarAnaliseRequest $request): JsonResponse
     {
-        // TODO: Implementar validação, consulta ao Bureau e regras de análise.
-        return response()->json(['message' => 'Not implemented'], 501);
+        $analise = $this->service->solicitar($request->validated());
+
+        return AnaliseCreditoResource::make($analise)
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
@@ -51,11 +61,9 @@ class AnaliseCreditoController extends Controller
      *    para a fila. O Job ficará responsável por finalizar e atualizar para 'contratado'.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function contratar($id)
+    public function contratar(AnaliseCredito $analise): JsonResponse
     {
-        // TODO: Implementar validação da análise e confirmação da contratação.
-        return response()->json(['message' => 'Not implemented'], 501);
+        return AnaliseCreditoResource::make($this->service->contratar($analise))->response();
     }
 }

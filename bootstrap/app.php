@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\Bureau\Exceptions\BureauIndisponivelException;
+use App\Services\Credito\Exceptions\AnaliseNaoContratavelException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,17 +21,35 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
-        );
+        $esperaJson = fn (Request $request) => $request->is('api/*') || $request->expectsJson();
+
+        $exceptions->shouldRenderJsonWhen($esperaJson);
 
         // sem isso a API responderia com o nome da classe do model no corpo
-        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
-            if ($e->getPrevious() instanceof ModelNotFoundException
-                && ($request->is('api/*') || $request->expectsJson())) {
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) use ($esperaJson) {
+            if ($e->getPrevious() instanceof ModelNotFoundException && $esperaJson($request)) {
                 return response()->json(
                     ['message' => 'Registro não encontrado.'],
                     Response::HTTP_NOT_FOUND,
+                );
+            }
+        });
+
+        // O Bureau é um terceiro, indisponibilidade dele não é erro da aplicação.
+        $exceptions->render(function (BureauIndisponivelException $e, Request $request) use ($esperaJson) {
+            if ($esperaJson($request)) {
+                return response()->json(
+                    ['message' => 'Não foi possível consultar o Bureau de Crédito no momento. Tente novamente em instantes.'],
+                    Response::HTTP_SERVICE_UNAVAILABLE,
+                );
+            }
+        });
+
+        $exceptions->render(function (AnaliseNaoContratavelException $e, Request $request) use ($esperaJson) {
+            if ($esperaJson($request)) {
+                return response()->json(
+                    ['message' => $e->getMessage()],
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
                 );
             }
         });

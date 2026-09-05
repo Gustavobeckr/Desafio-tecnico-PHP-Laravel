@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StatusAnalise;
+use App\Models\AnaliseCredito;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AnaliseCreditoTest extends TestCase
@@ -10,23 +14,86 @@ class AnaliseCreditoTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Teste inicial guiado: Verifica que a rota de solicitação de análise
-     * de crédito retorna o status HTTP 501 (Not Implemented) por padrão.
-     *
-     * O candidato deve adaptar ou reescrever este teste para validar
-     * o fluxo correto após implementar a solução.
+     * O fluxo completo é coberto na Fase 5; este teste garante que o endpoint
+     * saiu do stub 501 e devolve a análise avaliada.
      */
-    public function test_rota_solicitar_analise_retorna_stub_nao_implementado(): void
+    public function test_solicitar_analise_avalia_e_persiste_o_resultado(): void
     {
+        Http::fake(['*/api/mock/bureau/*' => Http::response(['score' => 850])]);
+
         $response = $this->postJson('/api/analise-credito', [
-            'cpf' => '12345678901',
+            'cpf' => '12345678903',
             'nome' => 'João da Silva',
-            'renda_mensal' => 3000.00,
+            'renda_mensal' => 8000.00,
             'tipo_credito' => 'pessoal',
-            'valor_solicitado' => 5000.00,
+            'valor_solicitado' => 10000.00,
         ]);
 
-        $response->assertStatus(501);
+        $response->assertCreated()
+            ->assertJsonPath('data.status', 'aprovado')
+            ->assertJsonPath('data.score', 850)
+            ->assertJsonPath('data.taxa_juros', 2.9)
+            ->assertJsonPath('data.valor_parcela', 1123.33);
+
+        $this->assertDatabaseHas('clientes', ['cpf' => '12345678903']);
+    }
+
+    public function test_falha_do_bureau_devolve_503_e_mantem_a_analise_pendente(): void
+    {
+        Http::fake(['*/api/mock/bureau/*' => Http::response(['error' => 'indisponível'], 500)]);
+
+        $this->postJson('/api/analise-credito', [
+            'cpf' => '12345678904',
+            'nome' => 'Rita Gomes',
+            'renda_mensal' => 8000.00,
+            'tipo_credito' => 'pessoal',
+            'valor_solicitado' => 5000.00,
+        ])->assertServiceUnavailable();
+
+        $this->assertDatabaseHas('analises_credito', [
+            'cpf' => '12345678904',
+            'status' => StatusAnalise::PENDENTE->value,
+            'score' => null,
+        ]);
+    }
+
+    public function test_timeout_do_bureau_devolve_503(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('Connection timed out'));
+
+        $this->postJson('/api/analise-credito', [
+            'cpf' => '12345678905',
+            'nome' => 'Tiago Pires',
+            'renda_mensal' => 8000.00,
+            'tipo_credito' => 'pessoal',
+            'valor_solicitado' => 5000.00,
+        ])->assertServiceUnavailable();
+    }
+
+    public function test_contratar_analise_aprovada_atualiza_o_status(): void
+    {
+        $analise = AnaliseCredito::factory()->aprovada()->create();
+
+        $this->postJson("/api/analise-credito/{$analise->id}/contratar")
+            ->assertOk()
+            ->assertJsonPath('data.status', StatusAnalise::CONTRATADO->value);
+
+        $this->assertSame(StatusAnalise::CONTRATADO, $analise->refresh()->status);
+    }
+
+    public function test_contratar_analise_nao_aprovada_devolve_422(): void
+    {
+        $analise = AnaliseCredito::factory()->reprovada()->create();
+
+        $this->postJson("/api/analise-credito/{$analise->id}/contratar")
+            ->assertUnprocessable();
+
+        $this->assertSame(StatusAnalise::REPROVADO, $analise->refresh()->status);
+    }
+
+    public function test_contratar_analise_inexistente_devolve_404(): void
+    {
+        $this->postJson('/api/analise-credito/999999/contratar')->assertNotFound();
     }
 
     /**
