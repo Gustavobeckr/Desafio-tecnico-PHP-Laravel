@@ -7,7 +7,6 @@ use App\Http\Resources\AnaliseCreditoResource;
 use App\Models\AnaliseCredito;
 use App\Services\Credito\AnaliseCreditoService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class AnaliseCreditoController extends Controller
@@ -34,7 +33,7 @@ class AnaliseCreditoController extends Controller
      *  5. Aplicar as regras de negócio (renda mínima, faixas de score, comprometimento de renda).
      *  6. Atualizar e retornar a análise persistida com o resultado final.
      *
-     * @param Request $request
+     * Falhas do Bureau viram 503 em bootstrap/app.php.
      */
     public function solicitar(SolicitarAnaliseRequest $request): JsonResponse
     {
@@ -48,7 +47,7 @@ class AnaliseCreditoController extends Controller
     /**
      * Confirma a contratação de uma análise de crédito aprovada.
      *
-     * POST /api/analise-credito/{id}/contratar
+     * POST /api/analise-credito/{analise}/contratar
      *
      * Fluxo esperado:
      *  1. Buscar a análise pelo ID (retornar 404 se não encontrada).
@@ -60,7 +59,7 @@ class AnaliseCreditoController extends Controller
      *    atualize para 'processando_contratacao' e dispare o Job ProcessarContratacaoJob
      *    para a fila. O Job ficará responsável por finalizar e atualizar para 'contratado'.
      *
-     * @param  int  $id
+     * Status diferente de aprovado vira 422 em bootstrap/app.php.
      */
     public function contratar(AnaliseCredito $analise): JsonResponse
     {

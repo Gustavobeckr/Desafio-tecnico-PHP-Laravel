@@ -205,7 +205,7 @@
             </div>
             <h3 class="text-2xl font-bold text-white mb-2">Contratação Realizada!</h3>
             <p class="text-slate-400 text-sm mb-6">O crédito foi contratado com sucesso. Você receberá uma confirmação em breve.</p>
-            <div class="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 mb-6 text-xs text-emerald-400 font-mono">
+            <div id="modal-status" class="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 mb-6 text-xs text-emerald-400 font-mono">
                 Status: CONTRATADO
             </div>
             <a href="/" class="inline-block px-8 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 rounded-xl text-sm font-medium transition-all">
@@ -219,21 +219,63 @@
         <p>&copy; 2026 Coop0156. Desafio Técnico Laravel.</p>
     </footer>
 
-    <!--
-      -- =========================================================================
-      -- INSTRUÇÕES (CANDIDATO): Implemente o JavaScript abaixo.
-      -- =========================================================================
-      -- Ao clicar em "Confirmar Contratação", o candidato deve:
-      --   1. Mostrar o spinner e desabilitar o botão para evitar clique duplo.
-      --   2. Fazer requisição POST para '/api/analise-credito/{{ $analise->id }}/contratar'.
-      --   3. Em caso de sucesso (HTTP 200), exibir o modal de sucesso (#modal-sucesso).
-      --   4. Em caso de erro, exibir uma mensagem de feedback adequada para o usuário.
-      -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const btnConfirmar = document.getElementById('btn-confirmar');
+            const txtConfirmar = document.getElementById('txt-confirmar');
+            const spinner = document.getElementById('spinner-confirmar');
+            const modal = document.getElementById('modal-sucesso');
+            const modalStatus = document.getElementById('modal-status');
 
-            // TODO: Implementar o clique do botão de confirmação.
+            const acoes = btnConfirmar.parentElement;
+            const banner = criarBanner();
+            let contratada = false;
+
+            btnConfirmar.addEventListener('click', async () => {
+                banner.classList.add('hidden');
+                carregando(true);
+
+                try {
+                    const resposta = await fetch('/api/analise-credito/{{ $analise->id }}/contratar', {
+                        method: 'POST',
+                        headers: { Accept: 'application/json' },
+                    });
+
+                    const corpo = await resposta.json().catch(() => ({}));
+
+                    if (resposta.ok) {
+                        contratada = true;
+                        modalStatus.textContent = `Status: ${(corpo.data?.status ?? 'contratado').toUpperCase()}`;
+                        modal.classList.remove('hidden');
+                    } else {
+                        exibirErro(corpo.message ?? 'Não foi possível concluir a contratação.');
+                    }
+                } catch {
+                    exibirErro('Falha de conexão com o servidor. Tente novamente.');
+                } finally {
+                    carregando(false);
+                }
+            });
+
+            function carregando(ativo) {
+                btnConfirmar.disabled = ativo || contratada;
+                btnConfirmar.classList.toggle('opacity-60', btnConfirmar.disabled);
+                btnConfirmar.classList.toggle('cursor-not-allowed', btnConfirmar.disabled);
+                spinner.classList.toggle('hidden', !ativo);
+                txtConfirmar.textContent = ativo ? 'Processando...' : 'Confirmar Contratação';
+            }
+
+            function exibirErro(mensagem) {
+                banner.textContent = mensagem;
+                banner.classList.remove('hidden');
+            }
+
+            function criarBanner() {
+                const elemento = document.createElement('div');
+                elemento.className = 'hidden bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-red-400 text-sm';
+                acoes.parentNode.insertBefore(elemento, acoes);
+                return elemento;
+            }
         });
     </script>
 

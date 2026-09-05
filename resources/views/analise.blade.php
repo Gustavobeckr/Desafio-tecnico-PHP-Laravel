@@ -219,7 +219,7 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </button>
-                    <p class="text-center text-xs text-slate-500 mt-3">Ao clicar, a simulação será enviada para a fila de processamento da contratação.</p>
+                    <p id="txt-ajuda-contratacao" class="text-center text-xs text-slate-500 mt-3">Ao clicar, a simulação será enviada para a fila de processamento da contratação.</p>
                 </div>
             </div>
 
@@ -251,25 +251,185 @@
         </div>
     </footer>
 
-    <!--
-      -- =========================================================================
-      -- INSTRUÇÕES DE IMPLEMENTAÇÃO JAVASCRIPT (DESAFIO PARA O CANDIDATO)
-      -- =========================================================================
-      -- O candidato deve escrever o JavaScript abaixo para integrar com as APIs.
-      -- Requisitos:
-      --   1. Tratar a submissão do formulário 'form-analise'.
-      --   2. Fazer requisição POST para '/api/analise-credito' com os dados do form.
-      --   3. Se REPROVADO: exibir o card de resultado com o motivo da recusa.
-      --   4. Se APROVADO: exibir o card de resultado e um botão/link que redirecione
-      --      o usuário para '/simulacao/{id}' para visualizar as condições antes de contratar.
-      -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // O candidato deve preencher a integração aqui.
-
             const form = document.getElementById('form-analise');
+            const inputCpf = document.getElementById('cpf');
+            const btnSolicitar = document.getElementById('btn-solicitar');
+            const txtSolicitar = document.getElementById('txt-solicitar');
+            const spinner = document.getElementById('loading-spinner');
 
-            // TODO: Adicionar Event Listeners e requisições para a API Laravel.
+            const cardVazio = document.getElementById('resultado-vazio');
+            const cardResultado = document.getElementById('resultado-analise');
+            const badge = document.getElementById('status-indicator-badge');
+            const blocoAprovado = document.getElementById('dados-aprovado');
+            const blocoReprovado = document.getElementById('dados-reprovado');
+            const containerContratacao = document.getElementById('container-contratacao');
+            const btnContratar = document.getElementById('btn-contratar');
+            const txtContratar = document.getElementById('txt-contratar');
+            const ajudaContratacao = document.getElementById('txt-ajuda-contratacao');
+
+            const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            const banner = criarBanner();
+
+            inputCpf.addEventListener('input', () => {
+                inputCpf.value = mascararCpf(inputCpf.value);
+            });
+
+            form.addEventListener('submit', async (evento) => {
+                evento.preventDefault();
+                limparErros();
+                carregando(true);
+
+                try {
+                    const dados = Object.fromEntries(new FormData(form));
+                    dados.cpf = apenasDigitos(dados.cpf);
+
+                    const resposta = await fetch('/api/analise-credito', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                        body: JSON.stringify(dados),
+                    });
+
+                    const corpo = await resposta.json().catch(() => ({}));
+
+                    if (resposta.status === 201) {
+                        exibirResultado(corpo.data);
+                    } else if (resposta.status === 422) {
+                        exibirErrosValidacao(corpo);
+                    } else {
+                        exibirErro(corpo.message ?? 'Não foi possível concluir a análise. Tente novamente.');
+                    }
+                } catch {
+                    exibirErro('Falha de conexão com o servidor. Verifique sua rede e tente novamente.');
+                } finally {
+                    carregando(false);
+                }
+            });
+
+            function exibirResultado(analise) {
+                const aprovada = analise.status === 'aprovado';
+
+                cardVazio.classList.add('hidden');
+                cardResultado.classList.remove('hidden');
+
+                texto('res-nome', analise.nome);
+                texto('res-cpf', mascararCpf(analise.cpf));
+                texto('res-score', analise.score ?? '—');
+
+                const status = document.getElementById('res-status');
+                status.textContent = aprovada ? 'Aprovado' : 'Reprovado';
+                status.className = `font-bold ${aprovada ? 'text-emerald-400' : 'text-red-400'}`;
+                badge.innerHTML = montarBadge(aprovada);
+
+                blocoAprovado.classList.toggle('hidden', !aprovada);
+                blocoReprovado.classList.toggle('hidden', aprovada);
+                containerContratacao.classList.toggle('hidden', !aprovada);
+
+                if (aprovada) {
+                    texto('res-taxa', `${percentual(analise.taxa_juros, 1)} a.m.`);
+                    texto('res-parcela', moeda.format(analise.valor_parcela));
+                    texto('res-comprometimento', percentual(analise.comprometimento_renda));
+                    prepararSimulacao(analise.id);
+                } else {
+                    texto('res-motivo', analise.motivo_rejeicao);
+                }
+
+                cardResultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // O enunciado pede que a aprovação leve à tela de simulação, e não
+            // que a contratação aconteça direto daqui.
+            function prepararSimulacao(id) {
+                txtContratar.textContent = 'Ver simulação e contratar';
+                ajudaContratacao.textContent = 'Você poderá revisar as condições antes de confirmar a contratação.';
+                btnContratar.onclick = () => window.location.assign(`/simulacao/${id}`);
+            }
+
+            function carregando(ativo) {
+                btnSolicitar.disabled = ativo;
+                btnSolicitar.classList.toggle('opacity-60', ativo);
+                btnSolicitar.classList.toggle('cursor-not-allowed', ativo);
+                spinner.classList.toggle('hidden', !ativo);
+                txtSolicitar.textContent = ativo ? 'Consultando o Bureau...' : 'Solicitar Análise de Crédito';
+            }
+
+            function exibirErro(mensagem) {
+                banner.textContent = mensagem;
+                banner.classList.remove('hidden');
+            }
+
+            function exibirErrosValidacao(corpo) {
+                const campos = corpo.errors ?? {};
+
+                Object.keys(campos).forEach((campo) => {
+                    document.getElementById(campo)?.classList.add('ring-2', 'ring-red-500/60');
+                });
+
+                const mensagens = Object.values(campos).flat();
+
+                if (mensagens.length === 0) {
+                    exibirErro(corpo.message ?? 'Dados inválidos.');
+                    return;
+                }
+
+                banner.innerHTML = `<ul class="list-disc list-inside space-y-1">${mensagens.map(itemDeLista).join('')}</ul>`;
+                banner.classList.remove('hidden');
+            }
+
+            function limparErros() {
+                banner.classList.add('hidden');
+                banner.textContent = '';
+                form.querySelectorAll('input, select').forEach((campo) => {
+                    campo.classList.remove('ring-2', 'ring-red-500/60');
+                });
+            }
+
+            function criarBanner() {
+                const elemento = document.createElement('div');
+                elemento.className = 'hidden bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-400';
+                btnSolicitar.parentNode.insertBefore(elemento, btnSolicitar);
+                return elemento;
+            }
+
+            function montarBadge(aprovada) {
+                const cores = aprovada
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border-red-500/20';
+
+                return `<span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full border ${cores}">${aprovada ? 'Aprovado' : 'Reprovado'}</span>`;
+            }
+
+            function itemDeLista(mensagem) {
+                const item = document.createElement('li');
+                item.textContent = mensagem;
+                return item.outerHTML;
+            }
+
+            function texto(id, valor) {
+                document.getElementById(id).textContent = valor;
+            }
+
+            function percentual(valor, casas = 2) {
+                const formatado = new Intl.NumberFormat('pt-BR', {
+                    minimumFractionDigits: casas,
+                    maximumFractionDigits: casas,
+                }).format(valor ?? 0);
+
+                return `${formatado}%`;
+            }
+
+            function apenasDigitos(valor) {
+                return String(valor).replace(/\D/g, '');
+            }
+
+            function mascararCpf(valor) {
+                return apenasDigitos(valor)
+                    .slice(0, 11)
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
         });
     </script>
 </body>
