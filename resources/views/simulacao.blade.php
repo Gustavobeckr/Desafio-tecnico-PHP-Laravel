@@ -1,67 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulação de Crédito — Coop0156</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: {
-                        darkBg: '#0b0f19',
-                        panelBg: '#131c2e',
-                        panelBorder: '#1e2d4a',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #0b0f19;
-            background-image:
-                radial-gradient(at 20% 20%, hsla(210, 70%, 15%, 0.2) 0px, transparent 50%),
-                radial-gradient(at 80% 80%, hsla(142, 70%, 12%, 0.15) 0px, transparent 50%);
-        }
-        .glass-panel {
-            background: rgba(19, 28, 46, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(30, 45, 74, 0.6);
-        }
-    </style>
-</head>
-<body class="text-slate-200 min-h-screen flex flex-col font-sans">
+<x-layout
+    titulo="Simulação de Crédito — Coop0156"
+    largura="max-w-4xl"
+    fundo="radial-gradient(at 20% 20%, hsla(210, 70%, 15%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, hsla(142, 70%, 12%, 0.15) 0px, transparent 50%)"
+>
 
-    <!-- Header -->
-    <header class="border-b border-panelBorder/50 py-5 glass-panel sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
-            <a href="/" class="flex items-center gap-3 group">
-                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">Coop0156</h1>
-                    <p class="text-xs text-slate-400">Desafio Análise de Crédito</p>
-                </div>
-            </a>
+    <x-slot:acao>
             <a href="/" class="text-sm text-slate-400 hover:text-emerald-400 transition-colors flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 Nova Análise
             </a>
-        </div>
-    </header>
+    </x-slot:acao>
 
-    <!-- Main Content -->
     <main class="flex-grow max-w-4xl mx-auto px-4 py-12 w-full">
 
         <!-- Breadcrumb -->
@@ -195,6 +147,7 @@
 
     </main>
 
+
     <!-- Sucesso Modal -->
     <div id="modal-sucesso" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
         <div class="glass-panel rounded-3xl p-10 max-w-md w-full mx-4 text-center">
@@ -214,11 +167,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="border-t border-panelBorder/40 py-6 text-center text-xs text-slate-600">
-        <p>&copy; 2026 Coop0156. Desafio Técnico Laravel.</p>
-    </footer>
-
+    <x-slot:scripts>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const btnConfirmar = document.getElementById('btn-confirmar');
@@ -278,6 +227,6 @@
             }
         });
     </script>
+    </x-slot:scripts>
 
-</body>
-</html>
+</x-layout>

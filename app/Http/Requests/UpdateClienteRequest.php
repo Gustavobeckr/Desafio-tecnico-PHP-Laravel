@@ -28,4 +28,16 @@ class UpdateClienteRequest extends FormRequest
             'renda_mensal' => ['sometimes', 'required', 'numeric', 'min:0'],
         ];
     }
+
+    /**
+     * Rótulo próprio do cadastro de clientes; os demais campos vêm de lang/pt_BR/validation.php.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'telefone' => 'telefone',
+        ];
+    }
 }

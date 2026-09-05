@@ -1,79 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma de Crédito Cooperativo</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        coop: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
-                        },
-                        darkBg: '#0b0f19',
-                        panelBg: '#131c2e',
-                        panelBorder: '#1e2d4a',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #0b0f19;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(142, 70%, 15%, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(220, 70%, 15%, 0.15) 0px, transparent 50%);
-        }
-        /* Glassmorphism utility */
-        .glass-panel {
-            background: rgba(19, 28, 46, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(30, 45, 74, 0.6);
-        }
-    </style>
-</head>
-<body class="text-slate-200 min-h-screen flex flex-col font-sans">
+<x-layout titulo="Plataforma de Crédito Cooperativo">
 
-    <!-- Header / Navbar -->
-    <header class="border-b border-panelBorder/50 py-5 glass-panel sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">Coop0156</h1>
-                    <p class="text-xs text-slate-400">Desafio Análise de Crédito</p>
-                </div>
-            </div>
+    <x-slot:acao>
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     Ambiente de Testes
                 </span>
             </div>
-        </div>
-    </header>
+    </x-slot:acao>
 
-    <!-- Main Content -->
     <main class="flex-grow max-w-6xl mx-auto px-4 py-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <!-- Formulário de Solicitação -->
@@ -86,48 +20,51 @@
             </h2>
             
             <form id="form-analise" class="space-y-6">
-                <!-- Nome Completo -->
-                <div>
-                    <label for="nome" class="block text-sm font-medium text-slate-400 mb-2">Nome Completo</label>
-                    <input type="text" id="nome" name="nome" required placeholder="Digite o nome completo do proponente"
-                        class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
+                <x-campo-texto
+                    name="nome"
+                    label="Nome Completo"
+                    placeholder="Digite o nome completo do proponente"
+                    required
+                />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <x-campo-texto
+                        name="cpf"
+                        label="CPF"
+                        placeholder="000.000.000-00"
+                        inputmode="numeric"
+                        maxlength="14"
+                        required
+                    />
+
+                    <x-campo-texto
+                        name="renda_mensal"
+                        label="Renda Mensal (R$)"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Ex: 3500.00"
+                        required
+                    />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- CPF -->
-                    <div>
-                        <label for="cpf" class="block text-sm font-medium text-slate-400 mb-2">CPF</label>
-                        <input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00"
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                    </div>
+                    <x-campo-selecao name="tipo_credito" label="Tipo de Crédito" required>
+                        <option value="" disabled selected>Selecione uma opção</option>
+                        <option value="pessoal">Crédito Pessoal</option>
+                        <option value="imobiliario">Crédito Imobiliário</option>
+                        <option value="automotivo">Crédito Automotivo</option>
+                    </x-campo-selecao>
 
-                    <!-- Renda Mensal -->
-                    <div>
-                        <label for="renda_mensal" class="block text-sm font-medium text-slate-400 mb-2">Renda Mensal (R$)</label>
-                        <input type="number" step="0.01" id="renda_mensal" name="renda_mensal" required placeholder="Ex: 3500.00"
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Tipo de Crédito -->
-                    <div>
-                        <label for="tipo_credito" class="block text-sm font-medium text-slate-400 mb-2">Tipo de Crédito</label>
-                        <select id="tipo_credito" name="tipo_credito" required
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                            <option value="" disabled selected>Selecione uma opção</option>
-                            <option value="pessoal">Crédito Pessoal</option>
-                            <option value="imobiliario">Crédito Imobiliário</option>
-                            <option value="automotivo">Crédito Automotivo</option>
-                        </select>
-                    </div>
-
-                    <!-- Valor Solicitado -->
-                    <div>
-                        <label for="valor_solicitado" class="block text-sm font-medium text-slate-400 mb-2">Valor Requerido (R$)</label>
-                        <input type="number" step="0.01" id="valor_solicitado" name="valor_solicitado" required placeholder="Ex: 15000.00"
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                    </div>
+                    <x-campo-texto
+                        name="valor_solicitado"
+                        label="Valor Requerido (R$)"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Ex: 15000.00"
+                        required
+                    />
                 </div>
 
                 <!-- Botão Enviar -->
@@ -143,7 +80,7 @@
         </section>
 
         <!-- Resultados e Contratação -->
-        <section class="lg:col-span-5 space-y-6">
+        <section class="lg:col-span-5 flex flex-col gap-6">
             
             <!-- Card de Resultado Inicial (Placeholder) -->
             <div id="resultado-vazio" class="glass-panel rounded-3xl p-8 text-center border-dashed border-2 border-panelBorder flex flex-col items-center justify-center py-20">
@@ -244,13 +181,7 @@
 
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-panelBorder/40 py-6 text-center text-xs text-slate-600">
-        <div class="max-w-6xl mx-auto px-4">
-            <p>&copy; 2026 CoopCred. Todos os direitos reservados. Desafio Técnico Laravel.</p>
-        </div>
-    </footer>
-
+    <x-slot:scripts>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('form-analise');
@@ -432,5 +363,6 @@
             }
         });
     </script>
-</body>
-</html>
+    </x-slot:scripts>
+
+</x-layout>

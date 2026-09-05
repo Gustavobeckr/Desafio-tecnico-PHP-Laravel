@@ -27,4 +27,17 @@ class SolicitarAnaliseRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
         ];
     }
+
+    /**
+     * Rótulos próprios da solicitação de análise; os demais vêm de lang/pt_BR/validation.php.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'tipo_credito' => 'tipo de crédito',
+            'valor_solicitado' => 'valor solicitado',
+        ];
+    }
 }
