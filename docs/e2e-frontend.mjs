@@ -68,7 +68,12 @@ checar('navegou para a simulação', /\/simulacao\/\d+$/.test(pagina.url()), pag
 await pagina.click('#btn-confirmar');
 await pagina.waitForSelector('#modal-sucesso:not(.hidden)', { timeout: 10000 });
 checar('modal de sucesso abriu', await pagina.locator('#modal-sucesso').isVisible());
-checar('status no modal', (await pagina.textContent('#modal-status')).trim() === 'Status: CONTRATADO');
+// Com QUEUE_CONNECTION=database e sem worker rodando, o status para em
+// processando_contratacao; com sync (ou worker no ar) chega a contratado.
+const statusModal = (await pagina.textContent('#modal-status')).trim();
+checar('status no modal', /^Status: (PROCESSANDO_CONTRATACAO|CONTRATADO)$/.test(statusModal), statusModal);
+checar('título coerente com o status', (await pagina.textContent('#modal-titulo')).includes(
+    statusModal.includes('PROCESSANDO') ? 'processamento' : 'realizada'));
 checar('botão desabilitado após sucesso', await pagina.locator('#btn-confirmar').isDisabled());
 
 // --- 4. Reprovado ---

@@ -3,6 +3,7 @@
 namespace App\Services\Credito;
 
 use App\Enums\StatusAnalise;
+use App\Jobs\ProcessarContratacaoJob;
 use App\Models\AnaliseCredito;
 use App\Models\Cliente;
 use App\Services\Bureau\BureauCreditoGateway;
@@ -47,6 +48,8 @@ final readonly class AnaliseCreditoService
     }
 
     /**
+     * Marca a análise como em processamento e delega a finalização à fila.
+     *
      * @throws AnaliseNaoContratavelException
      */
     public function contratar(AnaliseCredito $analise): AnaliseCredito
@@ -55,7 +58,12 @@ final readonly class AnaliseCreditoService
             throw AnaliseNaoContratavelException::status($analise->status);
         }
 
-        $analise->update(['status' => StatusAnalise::CONTRATADO]);
+        $analise->update(['status' => StatusAnalise::PROCESSANDO_CONTRATACAO]);
+
+        // afterCommit protege contra o worker pegar o job antes de a transação
+        // ser confirmada — hoje não há transação aqui, mas evita a armadilha
+        // caso uma seja adicionada depois.
+        ProcessarContratacaoJob::dispatch($analise->id)->afterCommit();
 
         return $analise;
     }

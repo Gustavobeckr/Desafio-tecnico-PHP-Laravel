@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\StatusAnalise;
+use App\Jobs\ProcessarContratacaoJob;
 use App\Models\AnaliseCredito;
 use App\Models\Cliente;
 use App\Services\Credito\PoliticaCredito;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class AnaliseCreditoTest extends TestCase
@@ -158,14 +160,31 @@ class AnaliseCreditoTest extends TestCase
         $this->assertDatabaseHas('analises_credito', ['status' => StatusAnalise::PENDENTE->value]);
     }
 
-    public function test_contratar_analise_aprovada_atualiza_o_status(): void
+    public function test_contratar_analise_aprovada_envia_para_a_fila(): void
     {
+        Queue::fake();
         $analise = AnaliseCredito::factory()->aprovada()->create();
 
         $this->postJson("/api/analise-credito/{$analise->id}/contratar")
             ->assertOk()
             ->assertJsonPath('data.id', $analise->id)
-            ->assertJsonPath('data.status', StatusAnalise::CONTRATADO->value);
+            ->assertJsonPath('data.status', StatusAnalise::PROCESSANDO_CONTRATACAO->value);
+
+        $this->assertSame(StatusAnalise::PROCESSANDO_CONTRATACAO, $analise->refresh()->status);
+
+        Queue::assertPushed(
+            ProcessarContratacaoJob::class,
+            fn (ProcessarContratacaoJob $job) => $job->analiseId === $analise->id,
+        );
+    }
+
+    public function test_contratar_com_a_fila_executando_chega_em_contratado(): void
+    {
+        // QUEUE_CONNECTION=sync no phpunit.xml: sem Queue::fake() o job roda
+        // na hora, simulando o worker.
+        $analise = AnaliseCredito::factory()->aprovada()->create();
+
+        $this->postJson("/api/analise-credito/{$analise->id}/contratar")->assertOk();
 
         $this->assertSame(StatusAnalise::CONTRATADO, $analise->refresh()->status);
     }
@@ -192,10 +211,13 @@ class AnaliseCreditoTest extends TestCase
 
     public function test_contratar_duas_vezes_devolve_422_na_segunda(): void
     {
+        Queue::fake();
         $analise = AnaliseCredito::factory()->aprovada()->create();
 
         $this->postJson("/api/analise-credito/{$analise->id}/contratar")->assertOk();
         $this->postJson("/api/analise-credito/{$analise->id}/contratar")->assertUnprocessable();
+
+        Queue::assertPushed(ProcessarContratacaoJob::class, 1);
     }
 
     public function test_contratar_analise_inexistente_devolve_404(): void

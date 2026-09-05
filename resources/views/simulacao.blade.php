@@ -156,8 +156,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
-            <h3 class="text-2xl font-bold text-white mb-2">Contratação Realizada!</h3>
-            <p class="text-slate-400 text-sm mb-6">O crédito foi contratado com sucesso. Você receberá uma confirmação em breve.</p>
+            <h3 id="modal-titulo" class="text-2xl font-bold text-white mb-2">Contratação Realizada!</h3>
+            <p id="modal-mensagem" class="text-slate-400 text-sm mb-6">O crédito foi contratado com sucesso. Você receberá uma confirmação em breve.</p>
             <div id="modal-status" class="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 mb-6 text-xs text-emerald-400 font-mono">
                 Status: CONTRATADO
             </div>
@@ -175,6 +175,8 @@
             const spinner = document.getElementById('spinner-confirmar');
             const modal = document.getElementById('modal-sucesso');
             const modalStatus = document.getElementById('modal-status');
+            const modalTitulo = document.getElementById('modal-titulo');
+            const modalMensagem = document.getElementById('modal-mensagem');
 
             const acoes = btnConfirmar.parentElement;
             const banner = criarBanner();
@@ -194,8 +196,7 @@
 
                     if (resposta.ok) {
                         contratada = true;
-                        modalStatus.textContent = `Status: ${(corpo.data?.status ?? 'contratado').toUpperCase()}`;
-                        modal.classList.remove('hidden');
+                        exibirSucesso(corpo.data?.status ?? 'contratado');
                     } else {
                         exibirErro(corpo.message ?? 'Não foi possível concluir a contratação.');
                     }
@@ -205,6 +206,19 @@
                     carregando(false);
                 }
             });
+
+            // Com a fila ligada a contratação volta como 'processando_contratacao';
+            // sem worker (ou com QUEUE_CONNECTION=sync) volta como 'contratado'.
+            function exibirSucesso(status) {
+                const emProcessamento = status === 'processando_contratacao';
+
+                modalTitulo.textContent = emProcessamento ? 'Contratação em processamento' : 'Contratação realizada!';
+                modalMensagem.textContent = emProcessamento
+                    ? 'Sua solicitação entrou na fila de processamento e será finalizada em instantes.'
+                    : 'O crédito foi contratado com sucesso. Você receberá uma confirmação em breve.';
+                modalStatus.textContent = `Status: ${status.toUpperCase()}`;
+                modal.classList.remove('hidden');
+            }
 
             function carregando(ativo) {
                 btnConfirmar.disabled = ativo || contratada;
