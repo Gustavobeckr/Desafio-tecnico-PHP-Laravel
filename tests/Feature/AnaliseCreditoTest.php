@@ -160,6 +160,39 @@ class AnaliseCreditoTest extends TestCase
         $this->assertDatabaseHas('analises_credito', ['status' => StatusAnalise::PENDENTE->value]);
     }
 
+    public function test_repetir_o_pedido_com_o_bureau_fora_reaproveita_a_analise_pendente(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('timeout'));
+
+        foreach (range(1, 3) as $tentativa) {
+            $this->postJson('/api/analise-credito', $this->dados())->assertServiceUnavailable();
+        }
+
+        $this->assertDatabaseCount('analises_credito', 1);
+        $this->assertDatabaseCount('clientes', 1);
+    }
+
+    public function test_pedido_diferente_cria_uma_nova_analise(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('timeout'));
+
+        $this->postJson('/api/analise-credito', $this->dados(['valor_solicitado' => 10000]))->assertServiceUnavailable();
+        $this->postJson('/api/analise-credito', $this->dados(['valor_solicitado' => 20000]))->assertServiceUnavailable();
+
+        $this->assertDatabaseCount('analises_credito', 2);
+    }
+
+    public function test_analise_concluida_nao_e_reaproveitada_como_pendente(): void
+    {
+        $this->bureauResponde(850);
+
+        $this->postJson('/api/analise-credito', $this->dados())->assertCreated();
+        $this->postJson('/api/analise-credito', $this->dados())->assertCreated();
+
+        // Duas solicitações idênticas bem-sucedidas são dois pedidos distintos.
+        $this->assertDatabaseCount('analises_credito', 2);
+    }
+
     public function test_contratar_analise_aprovada_envia_para_a_fila(): void
     {
         Queue::fake();

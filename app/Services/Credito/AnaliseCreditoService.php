@@ -83,14 +83,18 @@ final readonly class AnaliseCreditoService
                 ],
             );
 
-            return $cliente->analises()->create([
-                'nome' => $dados['nome'],
-                'cpf' => $dados['cpf'],
-                'renda_mensal' => $dados['renda_mensal'],
-                'tipo_credito' => $dados['tipo_credito'],
-                'valor_solicitado' => $dados['valor_solicitado'],
-                'status' => StatusAnalise::PENDENTE,
-            ]);
+            return $cliente->analises()->firstOrCreate(
+                [
+                    'status' => StatusAnalise::PENDENTE,
+                    'tipo_credito' => $dados['tipo_credito'],
+                    'valor_solicitado' => $dados['valor_solicitado'],
+                    'renda_mensal' => $dados['renda_mensal'],
+                ],
+                [
+                    'nome' => $dados['nome'],
+                    'cpf' => $dados['cpf'],
+                ],
+            );
         });
     }
 }
