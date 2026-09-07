@@ -5,7 +5,9 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "test:e2e": "node docs/e2e-frontend.mjs"
+        "test:e2e": "node docs/e2e-frontend.mjs",
+        "test:e2e:clientes": "node docs/e2e-clientes.mjs",
+        "test:e2e:all": "npm run test:e2e && npm run test:e2e:clientes"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
