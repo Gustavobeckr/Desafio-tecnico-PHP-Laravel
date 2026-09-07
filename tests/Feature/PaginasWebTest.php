@@ -17,6 +17,14 @@ class PaginasWebTest extends TestCase
             ->assertSee('form-analise', escape: false);
     }
 
+    public function test_pagina_de_clientes_responde(): void
+    {
+        $this->get('/clientes')
+            ->assertOk()
+            ->assertSee('form-cliente', escape: false)
+            ->assertSee('/api/clientes', escape: false);
+    }
+
     public function test_simulacao_exibe_as_condicoes_de_uma_analise_aprovada(): void
     {
         $analise = AnaliseCredito::factory()->aprovada()->create(['valor_solicitado' => 10000]);

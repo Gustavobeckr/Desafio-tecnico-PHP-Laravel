@@ -1,7 +1,8 @@
 <x-layout titulo="Plataforma de Crédito Cooperativo">
 
     <x-slot:acao>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-4">
+                <a href="/clientes" class="text-sm text-slate-400 hover:text-emerald-400 transition-colors">Clientes</a>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     Ambiente de Testes
                 </span>
