@@ -1,0 +1,420 @@
+{
+    "info": {
+        "name": "Coop0156 — Desafio Técnico - Análise de Crédito",
+        "description": "",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        { "key": "baseUrl", "value": "http://localhost" },
+        { "key": "analiseId", "value": "1" },
+        { "key": "clienteId", "value": "1" }
+    ],
+    "item": [
+        {
+            "name": "Clientes",
+            "item": [
+                {
+                    "name": "Listar clientes (paginado)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/clientes?page=1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "clientes"],
+                            "query": [{ "key": "page", "value": "1" }]
+                        }
+                    }
+                },
+                {
+                    "name": "Criar cliente",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const id = pm.response.json().data?.id ?? pm.response.json().id;",
+                                    "    if (id) pm.collectionVariables.set('clienteId', id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Maria Oliveira\",\n    \"cpf\": \"12345678903\",\n    \"email\": \"maria.oliveira@example.com\",\n    \"telefone\": \"51 99999-1234\",\n    \"renda_mensal\": 8000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/clientes",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "clientes"]
+                        }
+                    }
+                },
+                {
+                    "name": "Criar cliente — inválido (espera 422)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"cpf\": \"123\",\n    \"email\": \"nao-e-email\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/clientes",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "clientes"]
+                        }
+                    }
+                },
+                {
+                    "name": "Exibir cliente",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/clientes/{{clienteId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "clientes", "{{clienteId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Atualizar cliente (parcial)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"renda_mensal\": 12000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/clientes/{{clienteId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "clientes", "{{clienteId}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Remover cliente (espera 204)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/clientes/{{clienteId}}",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "clientes", "{{clienteId}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Análise de crédito",
+            "item": [
+                {
+                    "name": "Solicitar — aprovado 2,9% (score 850)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const id = pm.response.json()?.data?.id ?? pm.response.json()?.id;",
+                                    "if (id) pm.collectionVariables.set('analiseId', id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"João da Silva\",\n    \"cpf\": \"12345678903\",\n    \"renda_mensal\": 8000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 10000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        },
+                        "description": "Parcela esperada: 10.000 × 1,348 / 12 = R$ 1.123,33 (14% da renda)."
+                    }
+                },
+                {
+                    "name": "Solicitar — aprovado 4,5% (score 550)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Ana Souza\",\n    \"cpf\": \"12345678902\",\n    \"renda_mensal\": 8000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 10000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        },
+                        "description": "Parcela esperada: 10.000 × 1,54 / 12 = R$ 1.283,33."
+                    }
+                },
+                {
+                    "name": "Solicitar — reprovado por renda < 1.500",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Carlos Lima\",\n    \"cpf\": \"12345678903\",\n    \"renda_mensal\": 1000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 5000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        }
+                    }
+                },
+                {
+                    "name": "Solicitar — reprovado por score baixo (150)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Bruno Alves\",\n    \"cpf\": \"12345678901\",\n    \"renda_mensal\": 8000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 5000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        }
+                    }
+                },
+                {
+                    "name": "Solicitar — reprovado por comprometimento > 30%",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Paula Dias\",\n    \"cpf\": \"12345678903\",\n    \"renda_mensal\": 2000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 10000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        },
+                        "description": "Parcela R$ 1.123,33 contra um teto de R$ 600,00 (30% de 2.000)."
+                    }
+                },
+                {
+                    "name": "Solicitar — Bureau fora do ar (HTTP 500)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Rita Gomes\",\n    \"cpf\": \"12345678904\",\n    \"renda_mensal\": 8000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 5000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        },
+                        "description": "Deve responder 503 limpo, sem stack trace, com a análise permanecendo 'pendente'."
+                    }
+                },
+                {
+                    "name": "Solicitar — Bureau lento (timeout de 3s)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Tiago Pires\",\n    \"cpf\": \"12345678905\",\n    \"renda_mensal\": 8000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 5000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        },
+                        "description": "O mock dorme 5s e o timeout configurado é 3s."
+                    }
+                },
+                {
+                    "name": "Solicitar — Bureau devolve payload sem 'score'",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nome\": \"Sofia Reis\",\n    \"cpf\": \"12345678906\",\n    \"renda_mensal\": 8000.00,\n    \"tipo_credito\": \"pessoal\",\n    \"valor_solicitado\": 5000.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        }
+                    }
+                },
+                {
+                    "name": "Solicitar — payload inválido (espera 422)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"cpf\": \"123\",\n    \"tipo_credito\": \"consignado\",\n    \"valor_solicitado\": -1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "analise-credito"]
+                        }
+                    }
+                },
+                {
+                    "name": "Contratar análise aprovada",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito/{{analiseId}}/contratar",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "api",
+                                "analise-credito",
+                                "{{analiseId}}",
+                                "contratar"
+                            ]
+                        },
+                        "description": "Usa o analiseId salvo automaticamente pela requisição 'Solicitar — aprovado 2,9%'."
+                    }
+                },
+                {
+                    "name": "Contratar análise inexistente (espera 404)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/analise-credito/999999/contratar",
+                            "host": ["{{baseUrl}}"],
+                            "path": [
+                                "api",
+                                "analise-credito",
+                                "999999",
+                                "contratar"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Mock do Bureau",
+            "item": [
+                {
+                    "name": "Consultar score",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mock/bureau/12345678903",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mock", "bureau", "12345678903"]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
