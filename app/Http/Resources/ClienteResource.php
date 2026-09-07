@@ -23,6 +23,8 @@ class ClienteResource extends JsonResource
             'email' => $this->email,
             'telefone' => $this->telefone,
             'renda_mensal' => (float) $this->renda_mensal,
+            'analises_count' => $this->whenCounted('analises'),
+            'analises' => AnaliseCreditoResource::collection($this->whenLoaded('analises')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
