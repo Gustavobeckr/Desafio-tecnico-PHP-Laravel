@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\SolicitarAnaliseRequest;
+use App\Http\Resources\AnaliseCreditoResource;
+use App\Models\AnaliseCredito;
+use App\Services\Credito\AnaliseCreditoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class AnaliseCreditoController extends Controller
 {
+    public function __construct(private readonly AnaliseCreditoService $service) {}
+
     /**
      * Solicita uma nova análise de crédito.
      *
@@ -26,19 +33,21 @@ class AnaliseCreditoController extends Controller
      *  5. Aplicar as regras de negócio (renda mínima, faixas de score, comprometimento de renda).
      *  6. Atualizar e retornar a análise persistida com o resultado final.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * Falhas do Bureau viram 503 em bootstrap/app.php.
      */
-    public function solicitar(Request $request)
+    public function solicitar(SolicitarAnaliseRequest $request): JsonResponse
     {
-        // TODO: Implementar validação, consulta ao Bureau e regras de análise.
-        return response()->json(['message' => 'Not implemented'], 501);
+        $analise = $this->service->solicitar($request->validated());
+
+        return AnaliseCreditoResource::make($analise)
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
      * Confirma a contratação de uma análise de crédito aprovada.
      *
-     * POST /api/analise-credito/{id}/contratar
+     * POST /api/analise-credito/{analise}/contratar
      *
      * Fluxo esperado:
      *  1. Buscar a análise pelo ID (retornar 404 se não encontrada).
@@ -50,12 +59,10 @@ class AnaliseCreditoController extends Controller
      *    atualize para 'processando_contratacao' e dispare o Job ProcessarContratacaoJob
      *    para a fila. O Job ficará responsável por finalizar e atualizar para 'contratado'.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * Status diferente de aprovado vira 422 em bootstrap/app.php.
      */
-    public function contratar($id)
+    public function contratar(AnaliseCredito $analise): JsonResponse
     {
-        // TODO: Implementar validação da análise e confirmação da contratação.
-        return response()->json(['message' => 'Not implemented'], 501);
+        return AnaliseCreditoResource::make($this->service->contratar($analise))->response();
     }
 }

@@ -1,79 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma de Crédito Cooperativo</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        coop: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            900: '#14532d',
-                        },
-                        darkBg: '#0b0f19',
-                        panelBg: '#131c2e',
-                        panelBorder: '#1e2d4a',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #0b0f19;
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(142, 70%, 15%, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(220, 70%, 15%, 0.15) 0px, transparent 50%);
-        }
-        /* Glassmorphism utility */
-        .glass-panel {
-            background: rgba(19, 28, 46, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(30, 45, 74, 0.6);
-        }
-    </style>
-</head>
-<body class="text-slate-200 min-h-screen flex flex-col font-sans">
+<x-layout titulo="Plataforma de Crédito Cooperativo">
 
-    <!-- Header / Navbar -->
-    <header class="border-b border-panelBorder/50 py-5 glass-panel sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">Coop0156</h1>
-                    <p class="text-xs text-slate-400">Desafio Análise de Crédito</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
+    <x-slot:acao>
+            <div class="flex items-center gap-4">
+                <a href="/clientes" class="text-sm text-slate-400 hover:text-emerald-400 transition-colors">Clientes</a>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     Ambiente de Testes
                 </span>
             </div>
-        </div>
-    </header>
+    </x-slot:acao>
 
-    <!-- Main Content -->
     <main class="flex-grow max-w-6xl mx-auto px-4 py-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <!-- Formulário de Solicitação -->
@@ -86,48 +21,51 @@
             </h2>
             
             <form id="form-analise" class="space-y-6">
-                <!-- Nome Completo -->
-                <div>
-                    <label for="nome" class="block text-sm font-medium text-slate-400 mb-2">Nome Completo</label>
-                    <input type="text" id="nome" name="nome" required placeholder="Digite o nome completo do proponente"
-                        class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
+                <x-campo-texto
+                    name="nome"
+                    label="Nome Completo"
+                    placeholder="Digite o nome completo do proponente"
+                    required
+                />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <x-campo-texto
+                        name="cpf"
+                        label="CPF"
+                        placeholder="000.000.000-00"
+                        inputmode="numeric"
+                        maxlength="14"
+                        required
+                    />
+
+                    <x-campo-texto
+                        name="renda_mensal"
+                        label="Renda Mensal (R$)"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Ex: 3500.00"
+                        required
+                    />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- CPF -->
-                    <div>
-                        <label for="cpf" class="block text-sm font-medium text-slate-400 mb-2">CPF</label>
-                        <input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00"
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                    </div>
+                    <x-campo-selecao name="tipo_credito" label="Tipo de Crédito" required>
+                        <option value="" disabled selected>Selecione uma opção</option>
+                        <option value="pessoal">Crédito Pessoal</option>
+                        <option value="imobiliario">Crédito Imobiliário</option>
+                        <option value="automotivo">Crédito Automotivo</option>
+                    </x-campo-selecao>
 
-                    <!-- Renda Mensal -->
-                    <div>
-                        <label for="renda_mensal" class="block text-sm font-medium text-slate-400 mb-2">Renda Mensal (R$)</label>
-                        <input type="number" step="0.01" id="renda_mensal" name="renda_mensal" required placeholder="Ex: 3500.00"
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Tipo de Crédito -->
-                    <div>
-                        <label for="tipo_credito" class="block text-sm font-medium text-slate-400 mb-2">Tipo de Crédito</label>
-                        <select id="tipo_credito" name="tipo_credito" required
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                            <option value="" disabled selected>Selecione uma opção</option>
-                            <option value="pessoal">Crédito Pessoal</option>
-                            <option value="imobiliario">Crédito Imobiliário</option>
-                            <option value="automotivo">Crédito Automotivo</option>
-                        </select>
-                    </div>
-
-                    <!-- Valor Solicitado -->
-                    <div>
-                        <label for="valor_solicitado" class="block text-sm font-medium text-slate-400 mb-2">Valor Requerido (R$)</label>
-                        <input type="number" step="0.01" id="valor_solicitado" name="valor_solicitado" required placeholder="Ex: 15000.00"
-                            class="w-full bg-slate-950/50 border border-panelBorder rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
-                    </div>
+                    <x-campo-texto
+                        name="valor_solicitado"
+                        label="Valor Requerido (R$)"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Ex: 15000.00"
+                        required
+                    />
                 </div>
 
                 <!-- Botão Enviar -->
@@ -143,7 +81,7 @@
         </section>
 
         <!-- Resultados e Contratação -->
-        <section class="lg:col-span-5 space-y-6">
+        <section class="lg:col-span-5 flex flex-col gap-6">
             
             <!-- Card de Resultado Inicial (Placeholder) -->
             <div id="resultado-vazio" class="glass-panel rounded-3xl p-8 text-center border-dashed border-2 border-panelBorder flex flex-col items-center justify-center py-20">
@@ -219,7 +157,7 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </button>
-                    <p class="text-center text-xs text-slate-500 mt-3">Ao clicar, a simulação será enviada para a fila de processamento da contratação.</p>
+                    <p id="txt-ajuda-contratacao" class="text-center text-xs text-slate-500 mt-3">Ao clicar, a simulação será enviada para a fila de processamento da contratação.</p>
                 </div>
             </div>
 
@@ -244,33 +182,188 @@
 
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-panelBorder/40 py-6 text-center text-xs text-slate-600">
-        <div class="max-w-6xl mx-auto px-4">
-            <p>&copy; 2026 CoopCred. Todos os direitos reservados. Desafio Técnico Laravel.</p>
-        </div>
-    </footer>
-
-    <!--
-      -- =========================================================================
-      -- INSTRUÇÕES DE IMPLEMENTAÇÃO JAVASCRIPT (DESAFIO PARA O CANDIDATO)
-      -- =========================================================================
-      -- O candidato deve escrever o JavaScript abaixo para integrar com as APIs.
-      -- Requisitos:
-      --   1. Tratar a submissão do formulário 'form-analise'.
-      --   2. Fazer requisição POST para '/api/analise-credito' com os dados do form.
-      --   3. Se REPROVADO: exibir o card de resultado com o motivo da recusa.
-      --   4. Se APROVADO: exibir o card de resultado e um botão/link que redirecione
-      --      o usuário para '/simulacao/{id}' para visualizar as condições antes de contratar.
-      -->
+    <x-slot:scripts>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // O candidato deve preencher a integração aqui.
-
             const form = document.getElementById('form-analise');
+            const inputCpf = document.getElementById('cpf');
+            const btnSolicitar = document.getElementById('btn-solicitar');
+            const txtSolicitar = document.getElementById('txt-solicitar');
+            const spinner = document.getElementById('loading-spinner');
 
-            // TODO: Adicionar Event Listeners e requisições para a API Laravel.
+            const cardVazio = document.getElementById('resultado-vazio');
+            const cardResultado = document.getElementById('resultado-analise');
+            const badge = document.getElementById('status-indicator-badge');
+            const blocoAprovado = document.getElementById('dados-aprovado');
+            const blocoReprovado = document.getElementById('dados-reprovado');
+            const containerContratacao = document.getElementById('container-contratacao');
+            const btnContratar = document.getElementById('btn-contratar');
+            const txtContratar = document.getElementById('txt-contratar');
+            const ajudaContratacao = document.getElementById('txt-ajuda-contratacao');
+
+            const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            const banner = criarBanner();
+
+            inputCpf.addEventListener('input', () => {
+                inputCpf.value = mascararCpf(inputCpf.value);
+            });
+
+            form.addEventListener('submit', async (evento) => {
+                evento.preventDefault();
+                limparErros();
+                carregando(true);
+
+                try {
+                    const dados = Object.fromEntries(new FormData(form));
+                    dados.cpf = apenasDigitos(dados.cpf);
+
+                    const resposta = await fetch('/api/analise-credito', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                        body: JSON.stringify(dados),
+                    });
+
+                    const corpo = await resposta.json().catch(() => ({}));
+
+                    if (resposta.status === 201) {
+                        exibirResultado(corpo.data);
+                    } else if (resposta.status === 422) {
+                        exibirErrosValidacao(corpo);
+                    } else {
+                        exibirErro(corpo.message ?? 'Não foi possível concluir a análise. Tente novamente.');
+                    }
+                } catch {
+                    exibirErro('Falha de conexão com o servidor. Verifique sua rede e tente novamente.');
+                } finally {
+                    carregando(false);
+                }
+            });
+
+            function exibirResultado(analise) {
+                const aprovada = analise.status === 'aprovado';
+
+                cardVazio.classList.add('hidden');
+                cardResultado.classList.remove('hidden');
+
+                texto('res-nome', analise.nome);
+                texto('res-cpf', mascararCpf(analise.cpf));
+                texto('res-score', analise.score ?? '—');
+
+                const status = document.getElementById('res-status');
+                status.textContent = aprovada ? 'Aprovado' : 'Reprovado';
+                status.className = `font-bold ${aprovada ? 'text-emerald-400' : 'text-red-400'}`;
+                badge.innerHTML = montarBadge(aprovada);
+
+                blocoAprovado.classList.toggle('hidden', !aprovada);
+                blocoReprovado.classList.toggle('hidden', aprovada);
+                containerContratacao.classList.toggle('hidden', !aprovada);
+
+                if (aprovada) {
+                    texto('res-taxa', `${percentual(analise.taxa_juros, 1)} a.m.`);
+                    texto('res-parcela', moeda.format(analise.valor_parcela));
+                    texto('res-comprometimento', percentual(analise.comprometimento_renda));
+                    prepararSimulacao(analise.id);
+                } else {
+                    texto('res-motivo', analise.motivo_rejeicao);
+                }
+
+                cardResultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // O enunciado pede que a aprovação leve à tela de simulação, e não
+            // que a contratação aconteça direto daqui.
+            function prepararSimulacao(id) {
+                txtContratar.textContent = 'Ver simulação e contratar';
+                ajudaContratacao.textContent = 'Você poderá revisar as condições antes de confirmar a contratação.';
+                btnContratar.onclick = () => window.location.assign(`/simulacao/${id}`);
+            }
+
+            function carregando(ativo) {
+                btnSolicitar.disabled = ativo;
+                btnSolicitar.classList.toggle('opacity-60', ativo);
+                btnSolicitar.classList.toggle('cursor-not-allowed', ativo);
+                spinner.classList.toggle('hidden', !ativo);
+                txtSolicitar.textContent = ativo ? 'Consultando o Bureau...' : 'Solicitar Análise de Crédito';
+            }
+
+            function exibirErro(mensagem) {
+                banner.textContent = mensagem;
+                banner.classList.remove('hidden');
+            }
+
+            function exibirErrosValidacao(corpo) {
+                const campos = corpo.errors ?? {};
+
+                Object.keys(campos).forEach((campo) => {
+                    document.getElementById(campo)?.classList.add('ring-2', 'ring-red-500/60');
+                });
+
+                const mensagens = Object.values(campos).flat();
+
+                if (mensagens.length === 0) {
+                    exibirErro(corpo.message ?? 'Dados inválidos.');
+                    return;
+                }
+
+                banner.innerHTML = `<ul class="list-disc list-inside space-y-1">${mensagens.map(itemDeLista).join('')}</ul>`;
+                banner.classList.remove('hidden');
+            }
+
+            function limparErros() {
+                banner.classList.add('hidden');
+                banner.textContent = '';
+                form.querySelectorAll('input, select').forEach((campo) => {
+                    campo.classList.remove('ring-2', 'ring-red-500/60');
+                });
+            }
+
+            function criarBanner() {
+                const elemento = document.createElement('div');
+                elemento.className = 'hidden bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-400';
+                btnSolicitar.parentNode.insertBefore(elemento, btnSolicitar);
+                return elemento;
+            }
+
+            function montarBadge(aprovada) {
+                const cores = aprovada
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border-red-500/20';
+
+                return `<span class="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full border ${cores}">${aprovada ? 'Aprovado' : 'Reprovado'}</span>`;
+            }
+
+            function itemDeLista(mensagem) {
+                const item = document.createElement('li');
+                item.textContent = mensagem;
+                return item.outerHTML;
+            }
+
+            function texto(id, valor) {
+                document.getElementById(id).textContent = valor;
+            }
+
+            function percentual(valor, casas = 2) {
+                const formatado = new Intl.NumberFormat('pt-BR', {
+                    minimumFractionDigits: casas,
+                    maximumFractionDigits: casas,
+                }).format(valor ?? 0);
+
+                return `${formatado}%`;
+            }
+
+            function apenasDigitos(valor) {
+                return String(valor).replace(/\D/g, '');
+            }
+
+            function mascararCpf(valor) {
+                return apenasDigitos(valor)
+                    .slice(0, 11)
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
         });
     </script>
-</body>
-</html>
+    </x-slot:scripts>
+
+</x-layout>
